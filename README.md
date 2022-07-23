@@ -1,3 +1,9 @@
+[![Latest release on NPM](https://img.shields.io/npm/v/quarto.svg)](https://www.npmjs.com/package/imagecache-sharp)
+[![Build states](https://github.com/voidberg/quarto/workflows/Node.js%20CI/badge.svg)](https://github.com/voidberg/imagecache-sharp/actions?query=workflow%3A%22Node.js+CI%22+branch%3Amaster++)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+[![MIT License](https://img.shields.io/npm/l/quarto.svg)](https://opensource.org/licenses/MIT)
+
 ![Quarto](https://www.dropbox.com/s/dg1r4fmfpkmwwc7/quarto-small.png?raw=1)
 
 # Quarto
