@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+
+# EPUBCheck download (CI / local validate)
+epubcheck.zip
+epubcheck-*/
+
+# npm pack artifacts
+*.tgz

@@ -1,0 +1,61 @@
+{
+  "name": "@voidberg/quarto",
+  "version": "0.1.0",
+  "description": "Generate EPUB3 and Kobo kepub files from HTML — runtime-agnostic, in-memory, with optional table of contents.",
+  "keywords": [
+    "epub",
+    "epub3",
+    "kepub",
+    "kobo",
+    "ebook",
+    "html-to-epub"
+  ],
+  "license": "MIT",
+  "author": "Alexandru Badiu <alexandru@badiu.me>",
+  "homepage": "https://github.com/voidberg/quarto",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/voidberg/quarto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/voidberg/quarto/issues"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "assets"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "validate": "node scripts/validate-epubcheck.mjs",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "fallow": "npx -y fallow",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2",
+    "parse5": "^7.2.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.1",
+    "@types/node": "^24.13.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.9"
+  }
+}
