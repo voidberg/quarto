@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x, 24.x]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Test
+        run: npm test
+      - name: Build package
+        run: npm run build
+
+      # EPUBCheck is the source of truth for spec compliance; run it once.
+      - name: Set up Java (for EPUBCheck)
+        if: matrix.node-version == '24.x'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Download EPUBCheck
+        if: matrix.node-version == '24.x'
+        run: |
+          curl -sL -o epubcheck.zip https://github.com/w3c/epubcheck/releases/download/v5.1.0/epubcheck-5.1.0.zip
+          unzip -q epubcheck.zip
+          echo "EPUBCHECK_JAR=$PWD/epubcheck-5.1.0/epubcheck.jar" >> "$GITHUB_ENV"
+      - name: Validate generated EPUBs with EPUBCheck
+        if: matrix.node-version == '24.x'
+        run: npm run validate
