@@ -1,9 +1,15 @@
 {
   "name": "@voidberg/quarto",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "license": "MIT",
   "exports": "./src/index.ts",
   "publish": {
-    "include": ["src", "assets", "README.md", "LICENSE", "jsr.json"]
+    "include": [
+      "src",
+      "assets",
+      "README.md",
+      "LICENSE",
+      "jsr.json"
+    ]
   }
 }

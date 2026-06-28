@@ -1,6 +1,6 @@
 {
   "name": "@voidberg/quarto",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Generate EPUB3 and Kobo kepub files from HTML — runtime-agnostic, in-memory, with optional table of contents.",
   "keywords": [
     "epub",
