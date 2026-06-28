@@ -28,6 +28,11 @@ jobs:
         run: npm run typecheck
       - name: Test
         run: npm test
+      # Runs the suite inside workerd to guard the Cloudflare Workers / Web-only
+      # compatibility claim. Runtime-independent, so run it once.
+      - name: Test (Cloudflare Workers runtime)
+        if: matrix.node-version == '24.x'
+        run: npm run test:workers
       - name: Build package
         run: npm run build
 

@@ -1,0 +1,6 @@
+{
+  // Minimal config so the Workers vitest pool can boot workerd for the
+  // test/workers/ suite. No real Worker entrypoint — tests import quarto directly.
+  "name": "quarto-workers-test",
+  "compatibility_date": "2025-06-01"
+}
