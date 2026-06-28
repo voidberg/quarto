@@ -39,7 +39,7 @@ Quarto came out of specific needs in my own projects (like [instakobo](https://g
 - Optional table of contents (`includeToc`)
 - Native kepub conversion (`toKepub`) — Kobo reading-location spans, no binary needed
 - In-memory: returns a `Uint8Array`, never touches the filesystem
-- Runtime-agnostic: Node, Deno, Bun, and the browser (Web APIs + [`fflate`](https://github.com/101arrowz/fflate))
+- Runtime-agnostic: Node, Deno, Bun, Cloudflare Workers, and the browser (Web APIs + [`fflate`](https://github.com/101arrowz/fflate))
 - Re-serializes messy HTML into well-formed XHTML for you
 - Downloads and embeds remote images so the book is self-contained
 - Modern **ESM-only** (Node ≥ 18; `require()`-able from CommonJS on Node ≥ 20.19 / 22)
