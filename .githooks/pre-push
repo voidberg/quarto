@@ -1,0 +1,16 @@
+#!/bin/sh
+# Fast pre-push gate: catch the obvious breakage before it leaves your machine.
+# The slower suites (workerd Workers test, EPUBCheck) run in CI.
+# Bypass in a pinch with: git push --no-verify
+set -e
+
+echo "▶ typecheck"
+npm run --silent typecheck
+
+echo "▶ lint"
+npm run --silent lint
+
+echo "▶ test"
+npm test
+
+echo "✓ pre-push checks passed"

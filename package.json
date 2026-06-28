@@ -41,6 +41,7 @@
     "build": "npm run clean && tsc -p tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:workers": "vitest run --config vitest.workers.config.ts",
     "typecheck": "tsc --noEmit",
     "validate": "node scripts/validate-epubcheck.mjs",
     "lint": "biome check .",
@@ -54,6 +55,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
+    "@cloudflare/vitest-pool-workers": "^0.16.20",
     "@types/node": "^24.13.2",
     "typescript": "^5.9.3",
     "vitest": "^4.1.9"

@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/v/@voidberg/quarto.svg)](https://www.npmjs.com/package/@voidberg/quarto)
 [![JSR](https://jsr.io/badges/@voidberg/quarto)](https://jsr.io/@voidberg/quarto)
 [![CI](https://github.com/voidberg/quarto/actions/workflows/ci.yml/badge.svg)](https://github.com/voidberg/quarto/actions/workflows/ci.yml)
-[![MIT License](https://img.shields.io/npm/l/@voidberg/quarto.svg)](https://opensource.org/licenses/MIT)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 > a book size of about 9½ × 12 inches (24 × 30 centimetres), determined by folding printed sheets twice to form four leaves or eight pages.
 
@@ -39,7 +39,7 @@ Quarto came out of specific needs in my own projects (like [instakobo](https://g
 - Optional table of contents (`includeToc`)
 - Native kepub conversion (`toKepub`) — Kobo reading-location spans, no binary needed
 - In-memory: returns a `Uint8Array`, never touches the filesystem
-- Runtime-agnostic: Node, Deno, Bun, and the browser (Web APIs + [`fflate`](https://github.com/101arrowz/fflate))
+- Runtime-agnostic: Node, Deno, Bun, Cloudflare Workers, and the browser (Web APIs + [`fflate`](https://github.com/101arrowz/fflate))
 - Re-serializes messy HTML into well-formed XHTML for you
 - Downloads and embeds remote images so the book is self-contained
 - Modern **ESM-only** (Node ≥ 18; `require()`-able from CommonJS on Node ≥ 20.19 / 22)
@@ -137,13 +137,15 @@ const epub = await generateEpub({
 
 ```sh
 npm install
-npm test         # vitest
-npm run build    # tsc → dist (ESM + d.ts)
+git config core.hooksPath .githooks  # one-time: enable the pre-push test gate
+npm test          # vitest
+npm run test:workers # vitest in the Cloudflare Workers runtime (workerd)
+npm run build     # tsc → dist (ESM + d.ts)
 npm run typecheck
-npm run validate # EPUBCheck (needs Java + EPUBCHECK_JAR)
+npm run validate  # EPUBCheck (needs Java + EPUBCHECK_JAR)
 ```
 
-EPUBCheck runs in CI against generated fixtures to guarantee spec compliance.
+The `pre-push` hook (in `.githooks/`) runs typecheck, lint, and tests before a push; the slower Workers and EPUBCheck suites run in CI. EPUBCheck runs in CI against generated fixtures to guarantee spec compliance.
 
 ## Thanks to
 
