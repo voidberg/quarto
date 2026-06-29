@@ -35,9 +35,30 @@ const fixtures = {
     cover: coverBytes,
     chapters: [{ title: "C", html: `<p>Body <img src="${PNG}" alt="dot"/></p>` }],
   },
+  // Real-world messes EPUBCheck would otherwise reject — quarto sanitizes them
+  // into the valid content model. Each line below previously produced an error.
   "messy-html.epub": {
     title: "Messy",
-    chapters: [{ title: "C", html: "<p>unclosed<br>line<ul><li>x<li>y</ul>" }],
+    chapters: [
+      {
+        title: "C",
+        html: [
+          "<p>unclosed<br>line<ul><li>x<li>y</ul>",
+          "<script>alert(1)</script>",
+          '<iframe src="https://embed.example/x"></iframe>',
+          "<title>stray</title>",
+          `<picture><source srcset="x.webp" type="image/webp"><img src="${PNG}" alt="p"></picture>`,
+          "<div><figcaption>stray caption</figcaption></div>",
+          "<footer>a<footer>b</footer></footer>",
+          "<time>May 2025</time>",
+          "<bdo>reversed</bdo>",
+          '<form><p>subscribe</p><input name="email"></form>',
+          "<dl><dd>early</dd><dt>term</dt></dl>",
+          '<a href="https://a/>https://b">bad link</a>',
+          '<span href="https://x">href on span</span>',
+        ].join(""),
+      },
+    ],
   },
   "no-css.epub": {
     title: "Bare",

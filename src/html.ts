@@ -122,6 +122,31 @@ const BLOCK_ELEMENTS = new Set([
   "address",
 ]);
 
+// Elements with no place in reading content: head-only, scripting, or
+// remote/interactive embeds. Stripped entirely during sanitization.
+const STRIP_ELEMENTS = new Set([
+  "script",
+  "noscript",
+  "iframe",
+  "embed",
+  "object",
+  "title",
+  "head",
+  "base",
+  "meta",
+  "link",
+  "input",
+  "button",
+  "select",
+  "textarea",
+]);
+
+// `href` is only valid on these; it's dropped elsewhere.
+const HREF_ELEMENTS = new Set(["a", "area"]);
+
+// Sectioning headers/footers that must not nest within each other.
+const HEADER_FOOTER = new Set(["header", "footer"]);
+
 function isText(node: Node): node is TextNode {
   return node.nodeName === "#text";
 }
@@ -179,26 +204,122 @@ function walkElements(nodes: Node[], visit: (el: ElementNode) => void): void {
   }
 }
 
-/**
- * Browsers (and parse5) tolerate block elements nested inside phrasing-only
- * inline elements like `<span><div>…</div></span>`, but that violates the XHTML
- * content model and EPUBCheck rejects it. Bottom-up, rewrite any phrasing-only
- * element that contains a block child into a `<div>` (keeping its attributes), so
- * the structure becomes valid without losing content.
- */
-function fixBlockInPhrasing(nodes: Node[]): void {
-  for (const node of nodes) {
-    if (!isElement(node)) continue;
-    fixBlockInPhrasing(node.childNodes);
+interface SanitizeContext {
+  /** Tag of the element whose children we're processing. */
+  parentTag?: string;
+  /** True when inside a `<header>` or `<footer>`. */
+  inHeaderFooter: boolean;
+}
 
+/**
+ * Coerce arbitrary, real-world HTML into the EPUB3 XHTML content model so
+ * EPUBCheck accepts it. parse5 happily preserves messes that browsers tolerate
+ * but the spec forbids; this rewrites or drops them while keeping the content.
+ * Handles, bottom-up:
+ *  - stripping scripting / head-only / remote-embed / form elements;
+ *  - unwrapping `<form>` (keeping its text content);
+ *  - `<picture>` → its `<img>` fallback (or drop), avoiding bad/missing sources;
+ *  - misplaced `<figcaption>` / stray `<dt>`/`<dd>` → `<div>`;
+ *  - a malformed `<dl>` (indentation hack, bad order) → `<div>`;
+ *  - nested `<header>`/`<footer>` → `<div>`;
+ *  - `<time>` without `datetime` (text-only model) → `<span>`;
+ *  - `<bdo>` without a required `dir`;
+ *  - `href` on a non-anchor, or an unusable href URL → dropped;
+ *  - a block element inside a phrasing-only inline element → `<div>`.
+ */
+function sanitize(nodes: Node[], ctx: SanitizeContext): Node[] {
+  const out: Node[] = [];
+
+  for (const node of nodes) {
+    if (!isElement(node)) {
+      out.push(node);
+      continue;
+    }
+    const tag = node.tagName;
+
+    // Drop elements that don't belong in reading content.
+    if (STRIP_ELEMENTS.has(tag)) continue;
+
+    // `<form>` makes content "scripted" — unwrap it, keeping its text (its
+    // interactive controls are dropped via STRIP_ELEMENTS).
+    if (tag === "form") {
+      out.push(...sanitize(node.childNodes, ctx));
+      continue;
+    }
+
+    // `<picture>` → its `<img>` fallback (dropping `<source>` variants), or drop
+    // the whole thing when there's no `<img>`.
+    if (tag === "picture") {
+      const img = node.childNodes.find(
+        (c): c is ElementNode => isElement(c) && c.tagName === "img",
+      );
+      if (img) out.push(...sanitize([img], ctx));
+      continue;
+    }
+
+    // `<figcaption>` outside a `<figure>`, and stray `<dt>`/`<dd>` outside a
+    // `<dl>`, are invalid — demote to `<div>`.
+    if (tag === "figcaption" && ctx.parentTag !== "figure") demote(node);
+    if ((tag === "dt" || tag === "dd") && ctx.parentTag !== "dl") demote(node);
+    // A malformed `<dl>` (used for indentation, wrong order, non-dt/dd children)
+    // → `<div>`; its `<dt>`/`<dd>` children then demote via the rule above.
+    if (tag === "dl" && !isCleanDefinitionList(node)) demote(node);
+    // `<header>`/`<footer>` must not nest.
+    if (HEADER_FOOTER.has(node.tagName) && ctx.inHeaderFooter) demote(node);
+    // A `<time>` without `datetime` may only contain text → demote to `<span>`.
+    if (tag === "time" && getAttr(node, "datetime") === undefined) demote(node, "span");
+
+    fixAttributes(node);
+
+    node.childNodes = sanitize(node.childNodes, {
+      parentTag: node.tagName,
+      inHeaderFooter: ctx.inHeaderFooter || HEADER_FOOTER.has(node.tagName),
+    });
+
+    // Bottom-up: a phrasing-only element that now contains a block child becomes
+    // a `<div>` (keeping its attributes).
     if (
       PHRASING_ONLY.has(node.tagName) &&
       node.childNodes.some((c) => isElement(c) && BLOCK_ELEMENTS.has(c.tagName))
     ) {
-      node.nodeName = "div";
-      node.tagName = "div";
+      demote(node);
     }
+
+    out.push(node);
   }
+
+  return out;
+}
+
+function demote(el: ElementNode, tag = "div"): void {
+  el.nodeName = tag;
+  el.tagName = tag;
+}
+
+/** A `<dl>` is clean iff its element children are all `<dt>`/`<dd>`, it starts
+ * with a `<dt>`, and it has no stray non-whitespace text. */
+function isCleanDefinitionList(dl: ElementNode): boolean {
+  const elements = dl.childNodes.filter(isElement);
+  if (elements.length > 0 && elements[0]!.tagName !== "dt") return false;
+  if (elements.some((c) => c.tagName !== "dt" && c.tagName !== "dd")) return false;
+  return !dl.childNodes.some((c) => isText(c) && c.value.trim() !== "");
+}
+
+function fixAttributes(el: ElementNode): void {
+  // `<bdo>` requires a `dir` attribute.
+  if (el.tagName === "bdo" && getAttr(el, "dir") === undefined) {
+    setAttr(el, "dir", "ltr");
+  }
+  // Drop `href` where it isn't allowed or isn't a usable URL.
+  const href = getAttr(el, "href");
+  if (href !== undefined && (!HREF_ELEMENTS.has(el.tagName) || !isUsableUrl(href))) {
+    el.attrs = el.attrs.filter((a) => a.name !== "href");
+  }
+}
+
+/** Reject obviously-malformed hrefs (whitespace or `<>"` mean it isn't one URL). */
+function isUsableUrl(value: string): boolean {
+  return value.length > 0 && !/[\s<>"]/.test(value);
 }
 
 function getAttr(el: ElementNode, name: string): string | undefined {
@@ -220,8 +341,8 @@ export class HtmlFragment {
 
   static parse(html: string): HtmlFragment {
     const frag = parseFragment(html) as unknown as ParentNode;
-    fixBlockInPhrasing(frag.childNodes);
-    return new HtmlFragment(frag.childNodes);
+    const nodes = sanitize(frag.childNodes, { inHeaderFooter: false });
+    return new HtmlFragment(nodes);
   }
 
   /** Collect the `src` of every `<img>` (in document order). */
