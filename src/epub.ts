@@ -109,6 +109,8 @@ export async function generateEpub(input: EpubInput): Promise<Uint8Array> {
         description: input.description,
         date: input.date,
         coverImageId: cover.coverImageId,
+        series: input.series,
+        seriesIndex: input.seriesIndex,
       },
       ctx.manifest,
       ctx.spine,

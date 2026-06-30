@@ -33,6 +33,8 @@ const fixtures = {
   "with-cover.epub": {
     title: "Covered",
     cover: coverBytes,
+    series: "Engineering & <Friends>",
+    seriesIndex: 3,
     chapters: [{ title: "C", html: `<p>Body <img src="${PNG}" alt="dot"/></p>` }],
   },
   // Real-world messes EPUBCheck would otherwise reject — quarto sanitizes them

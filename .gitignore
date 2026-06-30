@@ -10,3 +10,6 @@ epubcheck-*/
 
 # npm pack artifacts
 *.tgz
+
+# private notes
+BACKLOG.md

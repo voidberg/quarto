@@ -78,6 +78,8 @@ deno add jsr:@voidberg/quarto      # Deno (JSR)
 | `downloadImages`    | `boolean`              | `true`                | Embed remote `<img>` sources. |
 | `transformImage`    | `ImageTransform`       | -                     | Rewrite each image before embedding (see below). |
 | `transformCover`    | `CoverTransform`       | -                     | Compose/replace the cover before embedding (see below). |
+| `series`            | `string`               | -                     | Collection/series name (see below). |
+| `seriesIndex`       | `number`               | -                     | Position within the series. |
 | `publisher`         | `string`               | -                     | |
 | `description`       | `string`               | -                     | |
 | `date`              | `string` (ISO-8601)    | -                     | Pass for reproducible builds. |
@@ -135,6 +137,19 @@ const epub = await generateEpub({
   chapters: [{ title: "Essay", html: essayHtml, excludeFromToc: true }],
 });
 ```
+
+## Series and collections
+
+```ts
+const epub = await generateEpub({
+  title: "Part Three",
+  series: "Engineering",
+  seriesIndex: 3,
+  chapters: [{ title: "C", html }],
+});
+```
+
+`series`/`seriesIndex` are written as both EPUB3 `belongs-to-collection` metadata and the legacy Calibre `calibre:series` pair, so readers and device mods can group books. On Kobo, the [NickelSeries](https://github.com/pgaskin/NickelSeries) mod reads this to shelve sideloaded books by series (stock firmware ignores it).
 
 ## Development
 

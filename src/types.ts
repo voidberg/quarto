@@ -133,6 +133,20 @@ export interface EpubOptions {
    */
   date?: string;
 
+  /**
+   * Collection/series this book belongs to. Emitted as both EPUB3
+   * `belongs-to-collection` metadata and the legacy Calibre `calibre:series`
+   * pair, so readers and device mods (e.g. NickelSeries on Kobo) can group books
+   * by series.
+   */
+  series?: string;
+
+  /**
+   * Position within {@link EpubOptions.series} (e.g. `3`). Ignored when no series
+   * is set.
+   */
+  seriesIndex?: number;
+
   /** Custom fetch implementation (defaults to the global `fetch`). */
   fetch?: typeof fetch;
 

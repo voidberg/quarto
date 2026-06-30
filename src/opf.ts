@@ -29,6 +29,10 @@ export interface OpfMetadata {
   description?: string;
   date?: string;
   coverImageId?: string;
+  /** Collection/series name this book belongs to. */
+  series?: string;
+  /** Position within the series. */
+  seriesIndex?: number;
 }
 
 export const CONTAINER_XML = `<?xml version="1.0" encoding="UTF-8"?>
@@ -80,6 +84,21 @@ export function buildOpf(
   if (meta.date) metaTags.push(`<dc:date>${escapeXml(meta.date)}</dc:date>`);
   if (meta.coverImageId)
     metaTags.push(`<meta name="cover" content="${escapeXml(meta.coverImageId)}"/>`);
+
+  if (meta.series) {
+    // Emit both forms: the EPUB3 `belongs-to-collection` metadata and the legacy
+    // Calibre `meta name` pair. Different tools read different ones - NickelSeries
+    // and Calibre prefer the Calibre form, EPUB-native readers the former.
+    const series = escapeXml(meta.series);
+    metaTags.push(`<meta property="belongs-to-collection" id="series">${series}</meta>`);
+    metaTags.push(`<meta refines="#series" property="collection-type">series</meta>`);
+    metaTags.push(`<meta name="calibre:series" content="${series}"/>`);
+    if (meta.seriesIndex !== undefined) {
+      const index = escapeXml(String(meta.seriesIndex));
+      metaTags.push(`<meta refines="#series" property="group-position">${index}</meta>`);
+      metaTags.push(`<meta name="calibre:series_index" content="${index}"/>`);
+    }
+  }
 
   const manifestTags = manifest.map((item) => {
     const props = item.properties ? ` properties="${item.properties}"` : "";

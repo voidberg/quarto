@@ -55,6 +55,35 @@ describe("generateEpub", () => {
     expect(opf).toContain("<dc:date>2026-06-27T13:00:00.000Z</dc:date>");
   });
 
+  it("emits series metadata in both EPUB3 and Calibre forms", async () => {
+    const epub = await generateEpub({
+      title: "S",
+      series: "Engineering",
+      seriesIndex: 3,
+      chapters: [{ title: "C", html: "<p>x</p>" }],
+    });
+    const opf = unzipToText(epub)["EPUB/content.opf"]!;
+
+    expect(opf).toContain('<meta property="belongs-to-collection" id="series">Engineering</meta>');
+    expect(opf).toContain('<meta refines="#series" property="collection-type">series</meta>');
+    expect(opf).toContain('<meta refines="#series" property="group-position">3</meta>');
+    expect(opf).toContain('<meta name="calibre:series" content="Engineering"/>');
+    expect(opf).toContain('<meta name="calibre:series_index" content="3"/>');
+  });
+
+  it("omits the series index metadata when only a series name is given", async () => {
+    const epub = await generateEpub({
+      title: "S",
+      series: "Unfiled",
+      chapters: [{ title: "C", html: "<p>x</p>" }],
+    });
+    const opf = unzipToText(epub)["EPUB/content.opf"]!;
+
+    expect(opf).toContain('<meta property="belongs-to-collection" id="series">Unfiled</meta>');
+    expect(opf).not.toContain("group-position");
+    expect(opf).not.toContain("calibre:series_index");
+  });
+
   it("re-serializes malformed HTML into well-formed XHTML", async () => {
     const epub = await generateEpub({
       title: "B",
