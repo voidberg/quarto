@@ -9,7 +9,7 @@
 
 > a book size of about 9½ x 12 inches (24 x 30 centimetres), determined by folding printed sheets twice to form four leaves or eight pages.
 
-Generate **EPUB3** and Kobo **kepub** files from HTML - entirely in memory, with no native dependencies and no external binaries.
+Turn HTML into **EPUB3** and Kobo **kepub** files - entirely in memory, with no native dependencies and no external binaries.
 
 ```ts
 import { writeFile } from "node:fs/promises";
