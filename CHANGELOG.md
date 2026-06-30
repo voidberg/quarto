@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/voidberg/quarto/compare/quarto-v0.3.0...quarto-v0.4.0) (2026-06-30)
+
+
+### Features
+
+* add series/collection metadata (series, seriesIndex) ([39e31c6](https://github.com/voidberg/quarto/commit/39e31c63f3efb3fd954596264bf5b5db727183af))
+
 ## [0.3.0](https://github.com/voidberg/quarto/compare/quarto-v0.2.0...quarto-v0.3.0) (2026-06-29)
 
 
